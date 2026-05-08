@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, updateDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
+import { environment } from '../../../environments/environment';
 
 export interface TodoInterface {
   title: string; 
@@ -13,6 +14,10 @@ export interface TodoInterface {
 })
 export class FireService {
   private readonly _fire = inject(Firestore);
+
+  constructor() {
+    console.log('FireService created', environment.name);
+  }
 
   async addDoc(data: {title: string;}) {
     const id = uuidv4();
