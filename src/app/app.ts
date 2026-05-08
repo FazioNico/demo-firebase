@@ -13,7 +13,8 @@ import { map, Observable } from 'rxjs';
 export class App {
   protected readonly title = signal('demo-fire');
   private readonly _fireService = inject(FireService);
-  public readonly todosList$: Observable<TodoInterface[]> = this._fireService.loadTodos().pipe(
+  public readonly todosList$: Observable<TodoInterface[]> = this._fireService.loadTodos()
+  .pipe(
     map((todos)=> {
       return todos.sort((a,b)=> {
         return a.title > b.title ? 1 : 0
