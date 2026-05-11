@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, updateDoc } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
+import { firstValueFrom, map, Observable, switchMap, throwError } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
 import { environment } from '../../../environments/environment';
 import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User } from '@angular/fire/auth';
@@ -9,7 +9,9 @@ export interface TodoInterface {
   title: string; 
   id: string;
   done?: boolean;
+  uid: string;
 }
+
 @Injectable({
   providedIn: 'root',
 })
@@ -43,7 +45,11 @@ export class FireService {
   async addDoc(data: {title: string;}) {
     const id = uuidv4();
     const docRef = doc(this._fire, 'nomades-todos-list/' + id);
-    await setDoc(docRef, {...data}).catch(error => {
+    const user = await firstValueFrom(this.user$);
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await setDoc(docRef, {...data, uid: user.uid}).catch(error => {
       console.log('error firebase', )
     });
 
@@ -55,9 +61,17 @@ export class FireService {
 
   loadTodos() {
     const colRef = collection(this._fire, 'nomades-todos-list');
-    const q = query(colRef);
-    const datas$ = collectionData(q, {idField: 'id'}) as Observable<TodoInterface[]>;
-    return datas$;
+    return this.user$.pipe(
+      switchMap((user) => {
+        if (!user) {
+          throwError(()=> new Error('no user'));
+        }
+        const fromUserId = where('uid', '==', user!.uid);
+        const q = query(colRef, fromUserId);
+        const datas$ = collectionData(q, {idField: 'id'}) as Observable<TodoInterface[]>;
+        return datas$;
+      })
+    );
   }
 
   async done(id: string) {
