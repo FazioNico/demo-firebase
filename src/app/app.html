@@ -1,5 +1,15 @@
+@let user = user$|async;
+
+@if (user) {
+  <button (click)="handleLogout()">logout</button>
+} @else {
+  <button (click)="handleAuthWithGoogle()">auth with Google</button>
+}
 <button (click)="handleAdd()">add todo</button>
 
+@if (user) {
+  <h1>Hello {{user.uid}}</h1>
+}
 <ul>
   @for (todo of todosList$|async; track todo.id) {
     <li> 

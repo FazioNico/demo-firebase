@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { FireService, TodoInterface } from './services/fire/fire';
 import { AsyncPipe } from '@angular/common';
 import { map, Observable } from 'rxjs';
+import { authState } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,15 @@ export class App {
       })
     }),
   );
+  public readonly user$ = this._fireService.user$;
+
+  async handleLogout() {
+    await this._fireService.logout();
+  }
+
+  async handleAuthWithGoogle() {
+    await this._fireService.signInWithGoogle();
+  }
 
   async handleAdd() {
     this._fireService.addDoc({

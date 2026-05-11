@@ -3,6 +3,7 @@ import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, upda
 import { Observable } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
 import { environment } from '../../../environments/environment';
+import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut } from '@angular/fire/auth';
 
 export interface TodoInterface {
   title: string; 
@@ -14,9 +15,21 @@ export interface TodoInterface {
 })
 export class FireService {
   private readonly _fire = inject(Firestore);
+  private readonly _auth = inject(Auth);
+  public readonly user$ = authState(this._auth);
 
   constructor() {
     console.log('FireService created', environment.name);
+  }
+
+  async signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(this._auth, provider);
+    console.log(result.user);
+  }
+
+  async logout() {
+    await signOut(this._auth);
   }
 
   async addDoc(data: {title: string;}) {
