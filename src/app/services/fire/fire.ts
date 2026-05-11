@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
-import { BehaviorSubject, firstValueFrom, map, Observable, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
 import { environment } from '../../../environments/environment';
 import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User } from '@angular/fire/auth';
@@ -65,13 +65,13 @@ export class FireService {
     const colRef = collection(this._fire, 'nomades-todos-list');
     this.user$.pipe(
       switchMap((user) => {
-        if (!user) {
-          throwError(()=> new Error('no user'));
+        if (user) {
+          const fromUserId = where('uid', '==', user!.uid);
+          const q = query(colRef, fromUserId);
+          const datas$ = collectionData(q, {idField: 'id'}) as Observable<TodoInterface[]>;
+          return datas$;
         }
-        const fromUserId = where('uid', '==', user!.uid);
-        const q = query(colRef, fromUserId);
-        const datas$ = collectionData(q, {idField: 'id'}) as Observable<TodoInterface[]>;
-        return datas$;
+        return of([]);
       })
     ).subscribe((data)=> {
       console.log('>>>>>>>>>>>>>', data)
