@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FireService, TodoInterface } from './services/fire/fire';
 import { AsyncPipe } from '@angular/common';
@@ -11,10 +11,10 @@ import { authState } from '@angular/fire/auth';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('demo-fire');
   private readonly _fireService = inject(FireService);
-  public readonly todosList$: Observable<TodoInterface[]> = this._fireService.loadTodos()
+  public readonly todosList$: Observable<TodoInterface[]> = this._fireService.todos$
   .pipe(
     map((todos)=> {
       return todos.sort((a,b)=> {
@@ -23,6 +23,10 @@ export class App {
     }),
   );
   public readonly user$ = this._fireService.user$;
+
+  ngOnInit(): void {
+    this._fireService.loadTodos();  
+  }
 
   async handleSaveUserData() {
     // extract data from user$ Observable

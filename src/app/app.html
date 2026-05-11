@@ -19,3 +19,12 @@
     </li>
   }
 </ul>
+<hr />
+<ul>
+  @for (todo of todosList$|async; track todo.id) {
+    <li> 
+      {{ todo.title }} - {{todo.done ? '√' : 'x'}} 
+      <button (click)="handleDone(todo.id)">done</button>
+    </li>
+  }
+</ul>

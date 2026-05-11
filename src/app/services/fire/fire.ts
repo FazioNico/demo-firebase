@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
-import { firstValueFrom, map, Observable, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, map, Observable, switchMap, throwError } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
 import { environment } from '../../../environments/environment';
 import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User } from '@angular/fire/auth';
@@ -19,6 +19,8 @@ export class FireService {
   private readonly _fire = inject(Firestore);
   private readonly _auth = inject(Auth);
   public readonly user$ = authState(this._auth);
+  private readonly _todos$ = new BehaviorSubject<TodoInterface[]>([]);
+  public readonly todos$ = this._todos$.asObservable();
 
   constructor() {
     console.log('FireService created', environment.name);
@@ -61,7 +63,7 @@ export class FireService {
 
   loadTodos() {
     const colRef = collection(this._fire, 'nomades-todos-list');
-    return this.user$.pipe(
+    this.user$.pipe(
       switchMap((user) => {
         if (!user) {
           throwError(()=> new Error('no user'));
@@ -71,7 +73,10 @@ export class FireService {
         const datas$ = collectionData(q, {idField: 'id'}) as Observable<TodoInterface[]>;
         return datas$;
       })
-    );
+    ).subscribe((data)=> {
+      console.log('>>>>>>>>>>>>>', data)
+      this._todos$.next(data);
+    });
   }
 
   async done(id: string) {
