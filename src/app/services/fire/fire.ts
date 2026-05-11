@@ -3,7 +3,7 @@ import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, upda
 import { Observable } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
 import { environment } from '../../../environments/environment';
-import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut } from '@angular/fire/auth';
+import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User } from '@angular/fire/auth';
 
 export interface TodoInterface {
   title: string; 
@@ -20,6 +20,14 @@ export class FireService {
 
   constructor() {
     console.log('FireService created', environment.name);
+  }
+
+  async saveUserData(data: User) {
+    const docRef = doc(this._fire, `users-data/${data.uid}`);
+    await setDoc(docRef, {
+      email: data.email,
+      displayName: data.displayName
+    });
   }
 
   async signInWithGoogle() {

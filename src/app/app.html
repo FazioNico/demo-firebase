@@ -2,6 +2,7 @@
 
 @if (user) {
   <button (click)="handleLogout()">logout</button>
+  <button (click)="handleSaveUserData()">save user data</button>
 } @else {
   <button (click)="handleAuthWithGoogle()">auth with Google</button>
 }

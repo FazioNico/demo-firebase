@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FireService, TodoInterface } from './services/fire/fire';
 import { AsyncPipe } from '@angular/common';
-import { map, Observable } from 'rxjs';
+import { firstValueFrom, map, Observable } from 'rxjs';
 import { authState } from '@angular/fire/auth';
 
 @Component({
@@ -24,12 +24,21 @@ export class App {
   );
   public readonly user$ = this._fireService.user$;
 
+  async handleSaveUserData() {
+    // extract data from user$ Observable
+    const user = await firstValueFrom(this.user$);
+    // send to firebase service 
+    if (!user) return;
+    await this._fireService.saveUserData(user);
+  }
+
   async handleLogout() {
     await this._fireService.logout();
   }
 
   async handleAuthWithGoogle() {
     await this._fireService.signInWithGoogle();
+    await this.handleSaveUserData();
   }
 
   async handleAdd() {
