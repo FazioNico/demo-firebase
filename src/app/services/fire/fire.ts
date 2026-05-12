@@ -62,6 +62,14 @@ export class FireService {
   }
 
   loadTodos() {
+    // rules_version = '2';
+    // service cloud.firestore {
+    //   match /databases/{database}/documents {
+    //     match /nomades-todos-list/{todo} {
+    //       allow write, read: if resource.data.uid == request.auth.uid;
+    //     }
+    //   }
+    // }
     const colRef = collection(this._fire, 'nomades-todos-list');
     this.user$.pipe(
       switchMap((user) => {
