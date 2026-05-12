@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
-import { addDoc, collection, collectionData, doc, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, collectionData, doc, Firestore, getDoc, query, setDoc, updateDoc, where, docData } from '@angular/fire/firestore';
 import { BehaviorSubject, firstValueFrom, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { v4 as uuidv4 } from "uuid";
 import { environment } from '../../../environments/environment';
 import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User } from '@angular/fire/auth';
+import { getDownloadURL, ref, Storage, uploadBytes } from '@angular/fire/storage';
 
 export interface TodoInterface {
   title: string; 
@@ -18,12 +19,39 @@ export interface TodoInterface {
 export class FireService {
   private readonly _fire = inject(Firestore);
   private readonly _auth = inject(Auth);
+  private readonly _storage = inject(Storage);
   public readonly user$ = authState(this._auth);
+  public readonly userProfile$ = this.getUserProfile();
   private readonly _todos$ = new BehaviorSubject<TodoInterface[]>([]);
   public readonly todos$ = this._todos$.asObservable();
 
   constructor() {
     console.log('FireService created', environment.name);
+  }
+
+  getUserProfile() {
+    return this.user$.pipe(
+      switchMap((user) => {
+        const docRef = doc(this._fire, `users-profile-nomades/${user!.uid}`);
+        return docData(docRef) as Observable<{email: string; profileImgRef: string; displayName: string;}>;
+      })
+    )
+  }
+
+  async uploadFile(file: File) {
+    const filePath = uuidv4();
+    const fileRef = ref(this._storage, filePath);
+    const result = await uploadBytes(fileRef, file);
+    // save into database bucket Ref
+    const user = await firstValueFrom(this.user$);
+    const docRef = doc(this._fire, `users-profile-nomades/${user!.uid}`);
+    await setDoc(docRef, {
+      profileImgRef: result.ref.toString(),
+      email: user?.email,
+      displayName: user?.displayName
+    });
+    // const url = await getDownloadURL(result.ref);
+    // console.log(url);
   }
 
   async saveUserData(data: User) {

@@ -4,10 +4,11 @@ import { FireService, TodoInterface } from './services/fire/fire';
 import { AsyncPipe } from '@angular/common';
 import { firstValueFrom, map, Observable } from 'rxjs';
 import { authState } from '@angular/fire/auth';
+import { GetDownloadURLPipe } from './pipes/getDownloadURL/get-download-url-pipe';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, AsyncPipe],
+  imports: [RouterOutlet, AsyncPipe, GetDownloadURLPipe],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -23,9 +24,15 @@ export class App implements OnInit {
     }),
   );
   public readonly user$ = this._fireService.user$;
+  public readonly userProfile$ = this._fireService.getUserProfile();
 
   ngOnInit(): void {
     this._fireService.loadTodos();  
+  }
+
+  async handleFileToUpload($event: any) {
+    const file = $event.target.files[0];
+    await this._fireService.uploadFile(file);
   }
 
   async handleSaveUserData() {

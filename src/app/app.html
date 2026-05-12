@@ -7,6 +7,13 @@
   <button (click)="handleAuthWithGoogle()">auth with Google</button>
 }
 <button (click)="handleAdd()">add todo</button>
+<input (change)="handleFileToUpload($event)" type="file" />
+
+<hr />
+@let userProfile = userProfile$|async;
+@if (userProfile) {
+  <img src="{{userProfile!.profileImgRef|getDownloadURL|async}}" />
+}
 
 @if (user) {
   <h1>Hello {{user.uid}}</h1>
